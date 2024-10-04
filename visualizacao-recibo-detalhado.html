@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recibo Detalhado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: inline-block;
+            width: 200px;
+        }
+        input, select {
+            width: 150px;
+        }
+        #recibo {
+            border: 2px solid #000;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .linha {
+            display: flex;
+            justify-content: space-between;
+        }
+        .total {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .assinatura {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+        }
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+        }
+        .tab button:hover {
+            background-color: #ddd;
+        }
+        .tab button.active {
+            background-color: #ccc;
+        }
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-top: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gerador de Recibo Detalhado</h1>
+    
+    <div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'DadosPrincipais')" id="defaultOpen">Dados Principais</button>
+        <button class="tablinks" onclick="openTab(event, 'HorasExtras')">Horas Extras</button>
+        <button class="tablinks" onclick="openTab(event, 'Adicionais')">Adicionais</button>
+        <button class="tablinks" onclick="openTab(event, 'Descontos')">Descontos</button>
+    </div>
+
+    <div id="DadosPrincipais" class="tabcontent">
+        <h2>Dados Principais</h2>
+        <div class="form-group">
+            <label for="beneficiario">Beneficiário:</label>
+            <input type="text" id="beneficiario">
+        </div>
+        <div class="form-group">
+            <label for="cpfCnpj">CPF/CNPJ:</label>
+            <input type="text" id="cpfCnpj">
+        </div>
+        <div class="form-group">
+            <label for="salarioBase">Salário Base:</label>
+            <input type="number" id="salarioBase">
+        </div>
+    </div>
+
+    <div id="HorasExtras" class="tabcontent">
+        <h2>Horas Extras</h2>
+        <div class="form-group">
+            <label for="horasExtras50">Horas Extras 50%:</label>
+            <input type="number" id="horasExtras50" placeholder="Horas" style="width: 70px;">
+            <input type="number" id="minutosExtras50" placeholder="Minutos" style="width: 70px;">
+        </div>
+        <div class="form-group">
+            <label for="percentualHorasExtras50">Percentual (%):</label>
+            <input type="number" id="percentualHorasExtras50" value="50">
+        </div>
+        <div class="form-group">
+            <label for="horasExtras100">Horas Extras 100%:</label>
+            <input type="number" id="horasExtras100" placeholder="Horas" style="width: 70px;">
+            <input type="number" id="minutosExtras100" placeholder="Minutos" style="width: 70px;">
+        </div>
+        <div class="form-group">
+            <label for="percentualHorasExtras100">Percentual (%):</label>
+            <input type="number" id="percentualHorasExtras100" value="100">
+        </div>
+    </div>
+
+    <div id="Adicionais" class="tabcontent">
+        <h2>Adicionais</h2>
+        <div class="form-group">
+            <label for="horasNoturnas">Horas Noturnas:</label>
+            <input type="number" id="horasNoturnas" placeholder="Horas" style="width: 70px;">
+            <input type="number" id="minutosNoturnos" placeholder="Minutos" style="width: 70px;">
+        </div>
+        <div class="form-group">
+            <label for="percentualAdicionalNoturno">Percentual Adicional Noturno (%):</label>
+            <input type="number" id="percentualAdicionalNoturno" value="20">
+        </div>
+    </div>
+
+    <div id="Descontos" class="tabcontent">
+        <h2>Descontos</h2>
+        <div class="form-group">
+            <label for="descontoFalta">Desconto de Falta:</label>
+            <input type="number" id="descontoFalta">
+        </div>
+        <div class="form-group">
+            <label for="descontoDSR">Desconto de DSR:</label>
+            <input type="number" id="descontoDSR">
+        </div>
+        <div class="form-group">
+            <label for="descontoProdutos">Desconto de Produtos:</label>
+            <input type="number" id="descontoProdutos">
+        </div>
+        <div class="form-group">
+            <label for="descontoAdiantamento">Desconto de Adiantamento:</label>
+            <input type="number" id="descontoAdiantamento">
+        </div>
+    </div>
+
+    <button onclick="gerarRecibo()" style="margin-top: 20px;">Gerar Recibo</button>
+    
+    <div id="recibo"></div>
+    <button class="btn-imprimir" style="display: none;" onclick="imprimir()">Imprimir</button>
+    <script
+    src="https://code.jquery.com/jquery-3.7.1.min.js"crossorigin="anonymous"></script>
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        document.getElementById("defaultOpen").click();
+
+        function calcularHorasExtras(horas, minutos, percentual, salarioBase) {
+            const horasDecimal = horas + (minutos / 60);
+            const valorHoraNormal = salarioBase / 220; // Considerando 220 horas mensais
+            return (valorHoraNormal * horasDecimal * (1 + (percentual / 100))).toFixed(2);
+        }
+
+        function calcularAdicionalNoturno(horas, minutos, percentual, salarioBase) {
+            const horasDecimal = horas + (minutos / 60);
+            const valorHoraNormal = salarioBase / 220; // Considerando 220 horas mensais
+            return (valorHoraNormal * horasDecimal * (percentual / 100)).toFixed(2);
+        }
+
+        function gerarRecibo() {
+            const dados = {
+                beneficiario: document.getElementById('beneficiario').value,
+                cpfCnpj: document.getElementById('cpfCnpj').value,
+                salarioBase: parseFloat(document.getElementById('salarioBase').value) || 0,
+                horasExtras50: parseFloat(document.getElementById('horasExtras50').value) || 0,
+                minutosExtras50: parseFloat(document.getElementById('minutosExtras50').value) || 0,
+                percentualHorasExtras50: parseFloat(document.getElementById('percentualHorasExtras50').value) || 50,
+                horasExtras100: parseFloat(document.getElementById('horasExtras100').value) || 0,
+                minutosExtras100: parseFloat(document.getElementById('minutosExtras100').value) || 0,
+                percentualHorasExtras100: parseFloat(document.getElementById('percentualHorasExtras100').value) || 100,
+                horasNoturnas: parseFloat(document.getElementById('horasNoturnas').value) || 0,
+                minutosNoturnos: parseFloat(document.getElementById('minutosNoturnos').value) || 0,
+                percentualAdicionalNoturno: parseFloat(document.getElementById('percentualAdicionalNoturno').value) || 20,
+                descontoFalta: parseFloat(document.getElementById('descontoFalta').value) || 0,
+                descontoDSR: parseFloat(document.getElementById('descontoDSR').value) || 0,
+                descontoProdutos: parseFloat(document.getElementById('descontoProdutos').value) || 0,
+                descontoAdiantamento: parseFloat(document.getElementById('descontoAdiantamento').value) || 0
+            };
+
+            const valorHorasExtras50 = calcularHorasExtras(dados.horasExtras50, dados.minutosExtras50, dados.percentualHorasExtras50, dados.salarioBase);
+            const valorHorasExtras100 = calcularHorasExtras(dados.horasExtras100, dados.minutosExtras100, dados.percentualHorasExtras100, dados.salarioBase);
+            const valorAdicionalNoturno = calcularAdicionalNoturno(dados.horasNoturnas, dados.minutosNoturnos, dados.percentualAdicionalNoturno, dados.salarioBase);
+
+            const totalProventos = dados.salarioBase + parseFloat(valorHorasExtras50) + parseFloat(valorHorasExtras100) + parseFloat(valorAdicionalNoturno);
+            const totalDescontos = dados.descontoFalta + dados.descontoDSR + dados.descontoProdutos + dados.descontoAdiantamento;
+            const total = totalProventos - totalDescontos;
+
+            const reciboHTML = `
+                <h2>RECIBO DE PAGAMENTO</h2>
+                <p><strong>Beneficiário:</strong> ${dados.beneficiario}</p>
+                <p><strong>CPF/CNPJ:</strong> ${dados.cpfCnpj}</p>
+                <h3>DEMONSTRATIVO</h3>
+                <div class="linha">
+                    <span>Salário Base:</span>
+                    <span>R$ ${dados.salarioBase.toFixed(2)}</span>
+                </div>
+                <div class="linha">
+                    <span>Horas Extras ${dados.percentualHorasExtras50}% (${dados.horasExtras50}h${dados.minutosExtras50}m):</span>
+                    <span>R$ ${valorHorasExtras50}</span>
+                </div>
+                <div class="linha">
+                    <span>Horas Extras ${dados.percentualHorasExtras100}% (${dados.horasExtras100}h${dados.minutosExtras100}m):</span>
+                    <span>R$ ${valorHorasExtras100}</span>
+                </div>
+                <div class="linha">
+                    <span>Adicional Noturno ${dados.percentualAdicionalNoturno}% (${dados.horasNoturnas}h${dados.minutosNoturnos}m):</span>
+                    <span>R$ ${valorAdicionalNoturno}</span>
+                </div>
+                <h3>DESCONTOS</h3>
+                <div class="linha">
+                    <span>Faltas:</span>
+                    <span>R$ ${dados.descontoFalta.toFixed(2)}</span>
+                </div>
+                <div class="linha">
+                    <span>DSR:</span>
+                    <span>R$ ${dados.descontoDSR.toFixed(2)}</span>
+                </div>
+                <div class="linha">
+                    <span>Produtos:</span>
+                    <span>R$ ${dados.descontoProdutos.toFixed(2)}</span>
+                </div>
+                <div class="linha">
+                    <span>Adiantamento:</span>
+                    <span>R$ ${dados.descontoAdiantamento.toFixed(2)}</span>
+                </div>
+                <div class="linha total">
+                    <span>TOTAL PROVENTOS:</span>
+                    <span>R$ ${totalProventos.toFixed(2)}</span>
+                </div>
+                <div class="linha total">
+                    <span>TOTAL DESCONTOS:</span>
+                    <span>R$ ${totalDescontos.toFixed(2)}</span>
+                </div>
+                <div class="linha total">
+                    <span>VALOR LÍQUIDO:</span>
+                    <span>R$ ${total.toFixed(2)}</span>
+                </div>
+                <p>Data: ${new Date().toLocaleDateString('pt-BR')}</p>
+                <div class="assinatura">
+                    ___________________________<br>
+                    Assinatura
+                </div>
+               
+            `;
+
+            document.getElementById('recibo').innerHTML = reciboHTML;
+            $('.btn-imprimir').show();
+        }
+
+        function imprimir() 
+        {
+            var reciboParaImprimir = document.getElementById('recibo');
+
+            var janelaDeImpressao = window.open('','Print-Window');
+            janelaDeImpressao.document.open();
+            janelaDeImpressao.document.write(`<html><body onload="window.print()">${reciboParaImprimir.innerHTML}</body></html>`);
+            janelaDeImpressao.document.close();
+            setTimeout(function(){janelaDeImpressao.close();},10);
+        }
+    </script>
+</body>
+</html>
